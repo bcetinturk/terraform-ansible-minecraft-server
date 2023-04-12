@@ -1,0 +1,48 @@
+---
+- name: Create Server Directory
+  ansible.builtin.file:
+    path: "{{ server_directory }}"
+    mode: "0755"
+    recurse: true
+
+- name: Download Minecraft Server File
+  ansible.builtin.get_url:
+    url: "{{ download_url }}"
+    dest: "{{ server_directory }}/server.jar"
+    mode: "0755"
+
+- name: Copy Configuration Files
+  ansible.builtin.template:
+    dest: "{{ server_directory }}/{{ item }}"
+    src: "{{ item }}.j2"
+    mode: "0755"
+  loop:
+    - eula.txt
+    - server.properties
+  notify: restart server
+
+- name: Copy Forge Installer
+  ansible.builtin.copy:
+    dest: "/tmp/forge.jar"
+    src: forge.jar
+    mode: "0755"
+
+- name: Install Forge Server
+  ansible.builtin.command:
+    cmd: "/usr/bin/java -jar /tmp/forge.jar --installServer {{ server_directory }}"
+    creates: "{{ server_directory }}/run.sh"
+  notify: restart server
+
+- name: Copy Mods
+  ansible.builtin.copy:
+    dest: "{{ server_directory }}"
+    src: mods
+    mode: "0755"
+  notify: restart server
+
+- name: Upload Service File
+  ansible.builtin.template:
+    dest: /etc/systemd/system/minecraft-server.service
+    src: minecraft-server.service.j2
+    mode: "0755"
+  notify: restart server

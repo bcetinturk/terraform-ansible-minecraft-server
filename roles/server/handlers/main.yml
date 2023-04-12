@@ -1,0 +1,7 @@
+---
+- name: Start Minecraft Server
+  ansible.builtin.service:
+    name: minecraft-server
+    state: restarted
+    enabled: true
+  listen: restart server

@@ -1,0 +1,6 @@
+---
+- name: Install JRE 17
+  ansible.builtin.apt:
+    name:
+      - openjdk-17-jre-headless
+    update_cache: true
